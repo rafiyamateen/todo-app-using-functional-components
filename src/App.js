@@ -10,8 +10,8 @@ import 'bootstrap/dist/css/bootstrap.min.css';
 
 const App = () => {
 
-  const [todoList, setTodoList] = useState([]),
-    [id, setId] = useState(0),
+  const [todoList, setTodoList] = useState(JSON.parse(localStorage.getItem('todoList')) || []),
+    [id, setId] = useState(JSON.parse(localStorage.getItem('id')) || 0),
     [input, setInput] = useState({ todo: '' }),
     [edit, setEdit] = useState(false),
     [alert, setAlert] = useState(false),
@@ -25,11 +25,13 @@ const App = () => {
       if (input.todo) {
         const str = input.todo,
           title = str[0].toUpperCase() + str.slice(1),
-          newItem = [...todoList];
-        newItem.push({ todo: title, id: id })
-        setTodoList(newItem)
+          newList = [...todoList];
+        newList.push({ todo: title, id: id })
+        setTodoList(newList)
         setInput({ todo: '' })
         setId(id + 1)
+        localStorage.setItem('id', JSON.stringify(id + 1))
+        localStorage.setItem('todoList', JSON.stringify(newList))
       }
       else {
         setAlert(true)
@@ -45,8 +47,13 @@ const App = () => {
     },
 
     deleteItem = (id) => {
-      const newList = todoList.filter(todo => todo.id !== id)
-      setTodoList(newList)
+      const filteredList = todoList.filter(todo => todo.id !== id)
+      setTodoList(filteredList)
+      localStorage.setItem('todoList', JSON.stringify(filteredList))
+      if (!JSON.parse(localStorage.getItem('todoList'))[0]) {
+        localStorage.setItem('id', JSON.stringify(0))
+        setId(0)
+      }
     },
 
     update = (toEdit) => {
@@ -59,6 +66,7 @@ const App = () => {
           todo: ''
         })
         setEdit(false)
+        localStorage.setItem('todoList', JSON.stringify(updateItem))
       }
       else {
         setAlert(true)
@@ -99,7 +107,7 @@ const App = () => {
             </>
         }
       </div>
-      { todoList[0] ?
+      { JSON.parse(localStorage.getItem('todoList')) ?
         <TodoList todoList={todoList} deleteItem={deleteItem} editItem={editItem} />
         : null
       }
